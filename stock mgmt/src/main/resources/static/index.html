@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial; background: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); width: 400px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        button { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .btn-save { background: #4CAF50; color: white; }
+        .btn-save:hover { background: #45a049; }
+        .btn-view { background: #2196F3; color: white; }
+        .btn-view:hover { background: #0b7dda; }
+        .btn-delete { background: #f44336; color: white; }
+        .btn-delete:hover { background: #da190b; }
+        .btn-clear { background: #ff9800; color: white; }
+        .btn-clear:hover { background: #e68900; }
+        .result { margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; max-height: 300px; overflow-y: auto; }
+        .stock-item { padding: 10px; margin: 5px 0; background: white; border-left: 4px solid #4CAF50; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Stock Management</h2>
+        
+        <input type="number" id="id" placeholder="ID (for update/delete)">
+        <input type="text" id="productName" placeholder="Product Name">
+        <input type="number" id="price" placeholder="Price" step="0.01">
+        <input type="number" id="stockLeft" placeholder="Stock Left">
+        <input type="number" id="sell" placeholder="Sell">
+        <input type="number" id="high" placeholder="High" step="0.01">
+        
+        <button class="btn-save" onclick="saveStock()">Save</button>
+        <button class="btn-view" onclick="viewStock()">View by ID</button>
+        <button class="btn-view" onclick="viewAll()">View All</button>
+        <button class="btn-delete" onclick="deleteStock()">Delete</button>
+        <button class="btn-clear" onclick="clearAll()">Clear</button>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8080/api/stocks';
+
+        function saveStock() {
+            const id = document.getElementById('id').value;
+            const data = {
+                productName: document.getElementById('productName').value,
+                price: parseFloat(document.getElementById('price').value) || 0,
+                stockLeft: parseInt(document.getElementById('stockLeft').value) || 0,
+                sell: parseInt(document.getElementById('sell').value) || 0,
+                high: parseFloat(document.getElementById('high').value) || 0
+            };
+
+            const url = id ? `${API}/${id}` : API;
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = `<div class="stock-item">Saved: ${JSON.stringify(data)}</div>`;
+                clearAll();
+            });
+        }
+
+        function viewStock() {
+            const id = document.getElementById('id').value;
+            if(!id) return alert('Enter ID');
+            
+            fetch(`${API}/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('id').value = data.id;
+                    document.getElementById('productName').value = data.productName;
+                    document.getElementById('price').value = data.price;
+                    document.getElementById('stockLeft').value = data.stockLeft;
+                    document.getElementById('sell').value = data.sell;
+                    document.getElementById('high').value = data.high;
+                    document.getElementById('result').innerHTML = `<div class="stock-item">${JSON.stringify(data)}</div>`;
+                });
+        }
+
+        function viewAll() {
+            fetch(API)
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    data.forEach(s => {
+                        html += `<div class="stock-item">
+                            ID: ${s.id} | Name: ${s.productName} | Price: ₹${s.price} | Stock: ${s.stockLeft} | Sell: ${s.sell} | High: ₹${s.high}
+                        </div>`;
+                    });
+                    document.getElementById('result').innerHTML = html;
+                });
+        }
+
+        function deleteStock() {
+            const id = document.getElementById('id').value;
+            if(!id) return alert('Enter ID');
+            
+            if(confirm('Delete?')) {
+                fetch(`${API}/${id}`, {method: 'DELETE'})
+                    .then(() => {
+                        document.getElementById('result').innerHTML = '<div class="stock-item">Deleted!</div>';
+                        clearAll();
+                    });
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('id').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('stockLeft').value = '';
+            document.getElementById('sell').value = '';
+            document.getElementById('high').value = '';
+        }
+    </script>
+</body>
+</html>
