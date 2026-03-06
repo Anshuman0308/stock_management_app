@@ -1,0 +1,11 @@
+CREATE DATABASE IF NOT EXISTS stock_db;
+USE stock_db;
+
+CREATE TABLE IF NOT EXISTS stocks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    price DOUBLE NOT NULL,
+    stock_left INT DEFAULT 0,
+    sell INT DEFAULT 0,
+    high DOUBLE DEFAULT 0.0
+);
