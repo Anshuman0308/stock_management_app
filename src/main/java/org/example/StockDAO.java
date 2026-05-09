@@ -4,8 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StockDAO {
-    private Connection connection;
+public class StockDAO implements AutoCloseable {
+    private final Connection connection;
 
     public StockDAO(String url, String user, String password) throws SQLException {
         this.connection = DriverManager.getConnection(url, user, password);
@@ -63,6 +63,7 @@ public class StockDAO {
         }
     }
 
+    @Override
     public void close() throws SQLException {
         if (connection != null) connection.close();
     }

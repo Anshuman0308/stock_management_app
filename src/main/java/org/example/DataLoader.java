@@ -1,5 +1,7 @@
 package org.example;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -10,6 +12,8 @@ import java.util.List;
 @Component
 public class DataLoader implements CommandLineRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(DataLoader.class);
+
     @Autowired
     private StockRepository repository;
 
@@ -19,7 +23,7 @@ public class DataLoader implements CommandLineRunner {
         if (excelFile.exists()) {
             List<Stock> stocks = ExcelUtil.importFromExcel(excelFile.getAbsolutePath());
             repository.saveAll(stocks);
-            System.out.println("Imported " + stocks.size() + " records from Excel on startup");
+            log.info("Imported {} records from Excel on startup", stocks.size());
         }
     }
 }
